@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
   # Instantiate Tacotron Model
   tts_model = Tacotron(embed_dims=hp.tts_embed_dims,
-                       num_chars=len(symbols),
+                       num_chars=hp.num_chars,
                        encoder_dims=hp.tts_encoder_dims,
                        decoder_dims=hp.tts_decoder_dims,
                        n_mels=hp.num_mels,

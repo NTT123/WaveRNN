@@ -16,7 +16,6 @@ from .utils.checkpoints import restore_checkpoint, save_checkpoint
 from .utils.dataset import get_tts_datasets
 from .utils.display import *
 from .utils.paths import Paths
-from .utils.text.symbols import symbols
 
 
 def np_now(x: torch.Tensor): return x.detach().cpu().numpy()
@@ -51,7 +50,7 @@ def main():
   # Instantiate Tacotron Model
   print('\nInitialising Tacotron Model...\n')
   model = Tacotron(embed_dims=hp.tts_embed_dims,
-                   num_chars=len(symbols),
+                   num_chars=hp.num_chars,
                    encoder_dims=hp.tts_encoder_dims,
                    decoder_dims=hp.tts_decoder_dims,
                    n_mels=hp.num_mels,
@@ -144,7 +143,7 @@ def tts_train_loop(paths: Paths, model: Tacotron, optimizer, train_set, lr, trai
       optimizer.zero_grad()
       loss.backward()
       if hp.tts_clip_grad_norm is not None:
-        grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), hp.tts_clip_grad_norm)
+        grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), hp.tts_clip_grad_norm).item()
         if np.isnan(grad_norm):
           print('grad_norm was NaN!')
 

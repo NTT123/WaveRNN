@@ -1,12 +1,18 @@
 """ from https://github.com/keithito/tacotron """
+import importlib
 import re
 
-from . import cleaners
-from .symbols import symbols
 
+###
 # Mappings from symbol to numeric ID and vice versa:
-_symbol_to_id = {s: i for i, s in enumerate(symbols)}
-_id_to_symbol = {i: s for i, s in enumerate(symbols)}
+#
+# Initilize None, load the corresponding value when
+# calling `text_to_sequence` or `sequence_to_text`
+# the first time.
+#
+_symbol_to_id = None  # {s: i for i, s in enumerate(symbols)}
+_id_to_symbol = None  # {i: s for i, s in enumerate(symbols)}
+cleaners = None
 
 # Regular expression matching text enclosed in curly braces:
 _curly_re = re.compile(r'(.*?)\{(.+?)\}(.*)')
@@ -25,6 +31,15 @@ def text_to_sequence(text, cleaner_names):
     Returns:
       List of integers corresponding to the symbols in the text
   '''
+
+  global _symbol_to_id, _id_to_symbol, cleaners
+
+  if _symbol_to_id is None:
+    lang = cleaner_names[0].split('.')[0]
+    cleaners = importlib.import_module(f'fatchord_wavernn.utils.text.{lang}.cleaners')
+    symbols = importlib.import_module(f'fatchord_wavernn.utils.text.{lang}.symbols')
+    _symbol_to_id = {s: i for i, s in enumerate(symbols.symbols)}  # type: ignore
+    _id_to_symbol = {i: s for i, s in enumerate(symbols.symbols)}  # type: ignore
   sequence = []
 
   # Check for curly braces and treat their contents as ARPAbet:
@@ -42,6 +57,16 @@ def text_to_sequence(text, cleaner_names):
 
 def sequence_to_text(sequence):
   '''Converts a sequence of IDs back to a string'''
+
+  global _symbol_to_id, _id_to_symbol, cleaners
+
+  if _symbol_to_id is None:
+    lang = cleaner_names[0].split('.')[0]
+    cleaners = importlib.import_module(f'fatchord_wavernn.utils.text.{lang}.cleaners')
+    symbols = importlib.import_module(f'fatchord_wavernn.utils.text.{lang}.symbols')
+    _symbol_to_id = {s: i for i, s in enumerate(symbols.symbols)}  # type: ignore
+    _id_to_symbol = {i: s for i, s in enumerate(symbols.symbols)}  # type: ignore
+
   result = ''
   for symbol_id in sequence:
     if symbol_id in _id_to_symbol:
@@ -55,7 +80,7 @@ def sequence_to_text(sequence):
 
 def _clean_text(text, cleaner_names):
   for name in cleaner_names:
-    cleaner = getattr(cleaners, name)
+    cleaner = getattr(cleaners, name.split('.')[-1])
     if not cleaner:
       raise Exception('Unknown cleaner: %s' % name)
     text = cleaner(text)

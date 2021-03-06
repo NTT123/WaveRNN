@@ -2,12 +2,14 @@
 
 This project = Duration Model + Acoustic model + WaveRNN model
 
+```
 Duration model: Text => Phoneme duration
 Acoustic model: Text + Phoneme => Speech features (melspectrogram + F0)
 WaveRNN model : Speech features => Waveform
+```
 
 References:
-WaveRNN: https://github.com/fatchord/WaveRNN
+- WaveRNN: https://github.com/fatchord/WaveRNN
 
 ## Installation
 
