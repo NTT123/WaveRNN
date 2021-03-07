@@ -8,6 +8,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import optim
+from torch.optim.lr_scheduler import OneCycleLR
 
 from .models.tacotron import Tacotron
 from .utils import data_parallel_workaround
@@ -97,8 +98,7 @@ def main():
                     ('Outputs/Step (r)', model.r)])
 
       train_set, attn_example = get_tts_datasets(paths.data, batch_size, r)
-      tts_train_loop(paths, model, optimizer, train_set, lr, training_steps, attn_example)
-
+      tts_train_loop(paths, model, optimizer, train_set, lr, training_steps, attn_example, warmup_lr=(i == 0))
     print('Training Complete.')
     print('To continue training increase tts_total_steps in hparams.py or use --force_train\n')
 
@@ -110,7 +110,7 @@ def main():
   print('\n\nYou can now train WaveRNN on GTA features - use python train_wavernn.py --gta\n')
 
 
-def tts_train_loop(paths: Paths, model: Tacotron, optimizer, train_set, lr, train_steps, attn_example):
+def tts_train_loop(paths: Paths, model: Tacotron, optimizer, train_set, lr, train_steps, attn_example, warmup_lr=False):
   device = next(model.parameters()).device  # use same device as model parameters
 
   for g in optimizer.param_groups:
@@ -118,6 +118,9 @@ def tts_train_loop(paths: Paths, model: Tacotron, optimizer, train_set, lr, trai
 
   total_iters = len(train_set)
   epochs = train_steps // total_iters + 1
+  if warmup_lr:
+    lrs = OneCycleLR(optimizer, lr, total_steps=epochs*total_iters, pct_start=0.5,
+                     div_factor=1000, anneal_strategy='cos', final_div_factor=2)
 
   for e in range(1, epochs+1):
 
@@ -148,6 +151,8 @@ def tts_train_loop(paths: Paths, model: Tacotron, optimizer, train_set, lr, trai
           print('grad_norm was NaN!')
 
       optimizer.step()
+      if warmup_lr:
+        lrs.step()
 
       running_loss += loss.item()
       avg_loss = running_loss / i

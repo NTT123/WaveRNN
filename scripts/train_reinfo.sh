@@ -16,8 +16,9 @@ if [ $stage -le 2 ]; then
   echo -e "\n==> stage 2: resample and normalize audio clips"
   find $data_dir/raw/ -name "*.wav" | while read filepath; do
     filename=$(basename $filepath)
-    echo "sox --norm=-5 $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename"
+    echo "sox --norm=-5 $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename silence 1 0.1 1%"
   done | pv -l -p -s 14935 -e -t | xargs -I CMD --max-procs=32 bash -c CMD
+  find $data_dir/processed -name "*.wav" -type 'f' -size -44 -delete
 fi
 
 if [ $stage -le 3 ]; then
