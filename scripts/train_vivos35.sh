@@ -37,7 +37,7 @@ tts_schedule = [(7,  1e-3,  10_000,  2),
 voc_batch_size = 2                
 voc_model_id = 'vivos35_mol'
 tts_model_id = 'vivos35_lsa_smooth_attention'
-
+tts_cleaner_names = ['vie.vie_cleaners']
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed

@@ -34,6 +34,7 @@ if [ $stage -le 4 ]; then
 # reinfo settings
 voc_model_id = 'reinfo_mol'
 tts_model_id = 'reinfo_lsa_smooth_attention'
+tts_cleaner_names = ['vie.vie_cleaners']
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed
@@ -45,7 +46,12 @@ if [ $stage -le 5 ]; then
 fi 
 
 if [ $stage -le 6 ]; then
-  echo -e "\n==> stage 6: train WaveRNN vocoder model"
-  python3 -m fatchord_wavernn.train_wavernn --hp_file=$data_dir/processed/hparams.py
+  echo -e "\n==> stage 6: create ground truth aligned dataset (GTA)"
+  python3 -m fatchord_wavernn.train_tacotron --hp_file=$data_dir/processed/hparams.py --force_gta
+fi
+
+if [ $stage -le 7 ]; then
+  echo -e "\n==> stage 7: train WaveRNN vocoder model"
+  python3 -m fatchord_wavernn.train_wavernn --hp_file=$data_dir/processed/hparams.py --gta
 fi 
 

@@ -8,7 +8,7 @@ Acoustic model: Text + Phoneme => Speech features (melspectrogram + F0)
 WaveRNN model : Speech features => Waveform
 ```
 
-References:
+This project uses source code from following repositories:
 - WaveRNN: https://github.com/fatchord/WaveRNN
 
 ## Installation
@@ -22,16 +22,26 @@ cd WaveRNN
 pip3 install -e .
 ```
 
-## Train on development dataset (Vietnamese vivos speaker 35)
+
+## Training scripts
+
+### Dev dataset (vietnamese-vivos-speaker35)
 
 ```sh
-bash ./scripts/train_vivos35.sh 1 /tmp/vivs35 # stage 1, working directory /tmp/vivos35
+bash ./scripts/train_vivos35.sh 1 /tmp/vivs35 # stage 1, data directory /tmp/vivos35
 ```
 
-## Train the system with Reinfo dataset (Vietnamese)
+### Reinfo dataset (vietnamese)
 
 ```sh
-bash ./scripts/train_reinfo.sh 1 /tmp/reinfo # stage=1  working directory=/tmp/reinfo
+bash ./scripts/train_reinfo.sh 1 /tmp/reinfo # stage=1, data directory=/tmp/reinfo
+```
+
+
+### LJSpeech dataset (english)
+
+```sh
+bash ./scripts/train_ljs.sh 1 /tmp/ljs # stage=1, data directory=/tmp/ljs
 ```
 
 

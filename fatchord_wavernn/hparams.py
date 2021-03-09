@@ -73,7 +73,7 @@ tts_lstm_dims = 512
 tts_postnet_K = 8
 tts_num_highways = 4
 tts_dropout = 0.5
-tts_cleaner_names = ['vie.vie_cleaners']
+tts_cleaner_names = ['eng.english_cleaners']
 num_chars = 256
 tts_stop_threshold = -3.4           # Value below which audio generation ends.
 # For example, for a range of [-4, 4], this
@@ -82,10 +82,13 @@ tts_stop_threshold = -3.4           # Value below which audio generation ends.
 
 # Training
 
-tts_schedule = [(7,  1e-3,  10_000,  32),   # progressive training schedule
-                (5,  1e-4, 100_000,  32),   # (r, lr, step, batch_size)
-                (2,  1e-4, 180_000,  16),
-                (2,  1e-4, 350_000,   8)]
+tts_schedule = [(7, 1e-3,   10_000, 32),   # progressive training schedule
+                (5, 1e-4,  100_000, 32),   # (r, lr, step, batch_size)
+                (2, 1e-4,  180_000, 32),
+                (2, 5e-5,  300_000, 32),
+                (2, 2e-5,  400_000, 32),
+                (2, 1e-5,  500_000, 32),
+                (2, 1e-5, 1000_000, 64), ]
 
 tts_max_mel_len = 1250              # if you have a couple of extremely long spectrograms you might want to use this
 tts_bin_lengths = True              # bins the spectrogram lengths before sampling in data loader - speeds up training
