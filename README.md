@@ -1,4 +1,4 @@
-# A complete TTS system
+# Yet Another TTS system (wip)
 
 This project = Duration Model + Acoustic model + WaveRNN model
 
@@ -7,6 +7,10 @@ Duration model: Text => Phoneme duration
 Acoustic model: Text + Phoneme => Speech features (melspectrogram + F0)
 WaveRNN model : Speech features => Waveform
 ```
+
+Current progress:
+- Bootstrapping from `fatchord/WaveRNN` tacotron and wavernn models.
+
 
 This project uses source code from following repositories:
 - WaveRNN: https://github.com/fatchord/WaveRNN
