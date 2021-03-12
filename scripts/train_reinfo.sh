@@ -16,7 +16,8 @@ if [ $stage -le 2 ]; then
   echo -e "\n==> stage 2: resample and normalize audio clips"
   find $data_dir/raw/ -name "*.wav" | while read filepath; do
     filename=$(basename $filepath)
-    echo "sox --norm=-5 $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename silence 1 0.1 1%"
+    # no trimming: silence -l 1 0.1 0.2% -1 0.1 0.2%"
+    echo "sox --norm=-3 $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename" 
   done | pv -l -p -s 14935 -e -t | xargs -I CMD --max-procs=32 bash -c CMD
   find $data_dir/processed -name "*.wav" -type 'f' -size -44 -delete
 fi
@@ -32,9 +33,10 @@ if [ $stage -le 4 ]; then
 
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
-voc_model_id = 'reinfo_mol'
+voc_model_id = 'reinfo_raw'
 tts_model_id = 'reinfo_lsa_smooth_attention'
 tts_cleaner_names = ['vie.vie_cleaners']
+voc_mode = 'RAW'
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed

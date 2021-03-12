@@ -120,7 +120,7 @@ def tts_train_loop(paths: Paths, model: Tacotron, optimizer, train_set, lr, trai
   epochs = train_steps // total_iters + 1
   if warmup_lr:
     lrs = OneCycleLR(optimizer, lr, total_steps=epochs*total_iters, pct_start=0.5,
-                     div_factor=1000, anneal_strategy='cos', final_div_factor=2)
+                     div_factor=1000, anneal_strategy='cos', final_div_factor=1)
 
   for e in range(1, epochs+1):
 
