@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Union
 
@@ -171,6 +170,54 @@ class Attention(nn.Module):
     return scores.transpose(1, 2)
 
 
+class GMMA(nn.Module):
+  """Gaussian Mixture Model (GMM) attention.
+
+  In fact, we use a mixture of discrete logistic distributions. 
+  Attention weights are normalized which is NOT true if we use continuous distributions.
+
+  Reference:
+  - https://arxiv.org/abs/1910.10288
+  """
+
+  def __init__(self, attn_dim, num_mixtures=10):
+    super().__init__()
+    self.W = nn.Linear(attn_dim, 128)
+    self.V = nn.Linear(128, 3*num_mixtures, bias=False)
+    self.num_mixtures = num_mixtures
+
+  def init_attention(self, encoder_seq_proj):
+    b, t, c = encoder_seq_proj.shape  # B Text Features
+    self.loc = torch.zeros(b, self.num_mixtures, device=encoder_seq_proj.device)
+    self.prev_t = 0
+
+  def forward(self, encoder_seq_proj, query, t):
+    if t == 0:
+      self.init_attention(encoder_seq_proj)
+      factor = 1.
+    else:
+      factor = t - self.prev_t
+      self.prev_t = t
+
+    params = self.V(torch.tanh(self.W(query)))  # query: B Features, params: B x 3 x num_mixutres
+    w_i_hat, delta_i_hat, sigma_i_hat = torch.chunk(params, 3, dim=-1)  # B x num_mixtures
+    w_i = torch.softmax(w_i_hat, -1)
+    # we scale delta_i by `factor` to make sure the alignment
+    # is still (approximately) correct when we change `factor`.
+    delta_i = nn.functional.softplus(delta_i_hat + 1.) * factor
+    sigma_i = nn.functional.softplus(torch.clamp(sigma_i_hat + 10., -5, 20))  # got NaN sometimes without clamping
+    self.loc = self.loc + delta_i  # B x num_mixtures
+    j = torch.arange(0, encoder_seq_proj.shape[1]).to(query.device)[None, None, :]  # B x num_mixtures x text
+    centered = j - self.loc[..., None]
+    right = torch.sigmoid((centered + 0.5) / sigma_i[..., None])
+    left = torch.sigmoid((centered - 0.5) / sigma_i[..., None])
+    alpha = (right - left)
+    # for j=0, use cdf Pr[x < 0.5]
+    alpha = torch.cat((right[..., :1], alpha[..., 1:]), dim=-1)
+    self.attention = torch.sum(alpha * w_i[..., None], dim=1)
+    return self.attention.unsqueeze(-1).transpose(1, 2)
+
+
 class LSA(nn.Module):
   def __init__(self, attn_dim, kernel_size=31, filters=32):
     super().__init__()
@@ -219,7 +266,7 @@ class Decoder(nn.Module):
     self.register_buffer('r', torch.tensor(1, dtype=torch.int))
     self.n_mels = n_mels
     self.prenet = PreNet(n_mels)
-    self.attn_net = LSA(decoder_dims)
+    self.attn_net = GMMA(decoder_dims)
     self.attn_rnn = nn.GRUCell(decoder_dims + decoder_dims // 2, decoder_dims)
     self.rnn_input = nn.Linear(2 * decoder_dims, lstm_dims)
     self.res_rnn1 = nn.LSTMCell(lstm_dims, lstm_dims)

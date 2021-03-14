@@ -82,13 +82,14 @@ tts_stop_threshold = -3.4           # Value below which audio generation ends.
 
 # Training
 
-tts_schedule = [(7, 1e-3,   20_000, 32),   # progressive training schedule
-                (5, 5e-4,   50_000, 32),   # (r, lr, step, batch_size)
-                (2, 2e-4,  100_000, 32),
-                (2, 1e-4,  150_000, 32),
-                (2, 5e-5,  200_000, 32),
-                (2, 2e-5,  250_000, 32),
-                (2, 1e-5,  300_000, 32), ]
+tts_schedule = [(15, 1e-3, 20_000, 32),   # progressive training schedule
+                (10, 1e-3, 50_000, 32),
+                (5, 5e-4, 100_000, 32),   # (r, lr, step, batch_size)
+                (2, 2e-4, 150_000, 32),
+                (2, 1e-4, 200_000, 32),
+                (2, 5e-5, 250_000, 32),
+                (2, 2e-5, 300_000, 32),
+                (2, 1e-5, 350_000, 32), ]
 
 tts_max_mel_len = 1250              # if you have a couple of extremely long spectrograms you might want to use this
 tts_bin_lengths = True              # bins the spectrogram lengths before sampling in data loader - speeds up training
