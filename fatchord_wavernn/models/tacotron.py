@@ -180,7 +180,7 @@ class GMMA(nn.Module):
   - https://arxiv.org/abs/1910.10288
   """
 
-  def __init__(self, attn_dim, num_mixtures=10):
+  def __init__(self, attn_dim, num_mixtures=1):
     super().__init__()
     self.W = nn.Linear(attn_dim, 128)
     self.V = nn.Linear(128, 3*num_mixtures, bias=False)
