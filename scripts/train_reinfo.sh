@@ -34,7 +34,7 @@ if [ $stage -le 4 ]; then
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
 voc_model_id = 'reinfo_raw'
-tts_model_id = 'reinfo_lsa_smooth_attention'
+tts_model_id = 'reinfo_onehead_monotonic_attention'
 tts_cleaner_names = ['vie.vie_cleaners']
 voc_mode = 'RAW'
 EOT
