@@ -3,7 +3,7 @@ import unicodedata
 
 _pad = '_'
 _punctuation = '!\'(),.:;? '
-_special = '-_'  # `_` for a [silent] duration of 0.05s
+_special = '-#'  # `#` for a [silent] duration of 0.05s
 
 
 alphabet = unicodedata.normalize(
