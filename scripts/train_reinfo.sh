@@ -20,6 +20,8 @@ if [ $stage -le 2 ]; then
     echo "sox --norm=-3 $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename" 
   done | pv -l -p -s 14935 -e -t | xargs -I CMD --max-procs=32 bash -c CMD
   find $data_dir/processed -name "*.wav" -type 'f' -size -44 -delete
+  # remove unaligned clips
+  rm $data_dir/processed/{00990,00991,08446,08620,10757,13070,13674,13727,14021}.wav
 fi
 
 if [ $stage -le 3 ]; then
