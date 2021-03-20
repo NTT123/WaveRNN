@@ -234,7 +234,7 @@ class LSA(nn.Module):
     self.cumulative = torch.zeros(b, t, device=device)
     self.attention = torch.zeros(b, t, device=device)
 
-  def forward(self, encoder_seq_proj, query, t):
+  def forward(self, encoder_seq_proj, query, t, seq_mask=None):
 
     if t == 0:
       self.init_attention(encoder_seq_proj)
@@ -249,6 +249,8 @@ class LSA(nn.Module):
 
     # Smooth Attention
     # scores = torch.sigmoid(u) / torch.sigmoid(u).sum(dim=1, keepdim=True)
+    if seq_mask is not None:
+      u = u.masked_fill(seq_mask == False, -float('inf'))
     scores = F.softmax(u, dim=1)
     self.attention = scores
     self.cumulative = torch.maximum(self.cumulative, self.attention)
@@ -279,7 +281,7 @@ class Decoder(nn.Module):
     return prev * mask + current * (1 - mask)
 
   def forward(self, encoder_seq, encoder_seq_proj, prenet_in,
-              hidden_states, cell_states, context_vec, t):
+              hidden_states, cell_states, context_vec, t, seq_mask=None):
 
     # Need this for reshaping mels
     batch_size = encoder_seq.size(0)
@@ -296,7 +298,10 @@ class Decoder(nn.Module):
     attn_hidden = self.attn_rnn(attn_rnn_in.squeeze(1), attn_hidden)
 
     # Compute the attention scores
-    scores = self.attn_net(encoder_seq_proj, attn_hidden, t)
+    if seq_mask is not None:
+      scores = self.attn_net(encoder_seq_proj, attn_hidden, t, seq_mask)
+    else:
+      scores = self.attn_net(encoder_seq_proj, attn_hidden, t)
 
     # Dot product to create the context vector
     context_vec = scores @ encoder_seq
@@ -391,6 +396,7 @@ class Tacotron(nn.Module):
     # Project the encoder outputs to avoid
     # unnecessary matmuls in the decoder loop
     encoder_seq = self.encoder(x)
+    seq_mask = x > 0
     encoder_seq_proj = self.encoder_proj(encoder_seq)
 
     # Need a couple of lists for outputs
@@ -401,7 +407,7 @@ class Tacotron(nn.Module):
       prenet_in = m[:, :, t - 1] if t > 0 else go_frame
       mel_frames, scores, hidden_states, cell_states, context_vec = \
           self.decoder(encoder_seq, encoder_seq_proj, prenet_in,
-                       hidden_states, cell_states, context_vec, t)
+                       hidden_states, cell_states, context_vec, t, seq_mask)
       mel_outputs.append(mel_frames)
       attn_scores.append(scores)
 
@@ -425,6 +431,7 @@ class Tacotron(nn.Module):
 
     batch_size = 1
     x = torch.as_tensor(x, dtype=torch.long, device=device).unsqueeze(0)
+    seq_mask = x > 0
 
     # Need to initialise all hidden states and pack into tuple for tidyness
     attn_hidden = torch.zeros(batch_size, self.decoder_dims, device=device)
@@ -456,7 +463,7 @@ class Tacotron(nn.Module):
       prenet_in = mel_outputs[-1][:, :, -1] if t > 0 else go_frame
       mel_frames, scores, hidden_states, cell_states, context_vec = \
           self.decoder(encoder_seq, encoder_seq_proj, prenet_in,
-                       hidden_states, cell_states, context_vec, t)
+                       hidden_states, cell_states, context_vec, t, seq_mask)
       mel_outputs.append(mel_frames)
       attn_scores.append(scores)
       # Stop the loop if silent frames present
