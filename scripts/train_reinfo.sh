@@ -25,6 +25,7 @@ fi
 if [ $stage -le 3 ]; then
   echo -e "\n==> stage 3: convert text to ljspeech format"
   cat $data_dir/raw/25hours/scripts.csv | awk  -F'([/|]|[.]wav)' '{print $3 "|" $5 }' > $data_dir/processed/prompts.csv
+  cp ./fatchord_wavernn/assets/reinfo_silence_spaces.txt $data_dir/processed/prompts.csv
 fi
 
 if [ $stage -le 4 ]; then
@@ -34,7 +35,7 @@ if [ $stage -le 4 ]; then
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
 voc_model_id = 'reinfo_raw'
-tts_model_id = 'reinfo_onehead_monotonic_attention'
+tts_model_id = 'reinfo_lsa_attention'
 tts_cleaner_names = ['vie.vie_cleaners']
 voc_mode = 'RAW'
 EOT
