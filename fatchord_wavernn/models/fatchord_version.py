@@ -234,6 +234,17 @@ class WaveRNN(nn.Module):
 
         elif self.mode == 'RAW':
           posterior = F.softmax(logits, dim=1)
+
+          # we use nucleus sampling
+          nucleus_prob = 0.95
+          posterior = F.softmax(logits, dim=1)
+          p1, _ = torch.sort(posterior, dim=1)  # 0.1 0.2 0.3 0.4
+          p2 = torch.cumsum(p1, dim=1)  # 0.1 0.3 0.6 1.
+          p3 = p1.masked_fill(p2 > (1-nucleus_prob), 0.)  # 0.1 0 0 0
+          threshold, _ = torch.max(p3, dim=1, keepdim=True)  # 0.1
+          posterior = posterior.masked_fill(posterior <= threshold, 0.)
+          posterior = posterior / torch.sum(posterior, dim=1, keepdim=True)  # normalize probability
+
           distrib = torch.distributions.Categorical(posterior)
 
           sample = 2 * distrib.sample().float() / (self.n_classes - 1.) - 1.

@@ -17,7 +17,8 @@ if [ $stage -le 2 ]; then
   find $data_dir/raw/ -name "*.wav" | while read filepath; do
     filename=$(basename $filepath)
     # no trimming: silence -l 1 0.1 0.2% -1 0.1 0.2%"
-    echo "sox --norm=-3 $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename" 
+    # echo "sox $filepath -b 16 -r 22050 -c 1 $data_dir/processed/$filename" 
+    echo "cp $filepath $data_dir/processed/$filename" 
   done | pv -l -p -s 14935 -e -t | xargs -I CMD --max-procs=32 bash -c CMD
   find $data_dir/processed -name "*.wav" -type 'f' -size -44 -delete
   # remove unaligned clips
@@ -36,10 +37,11 @@ if [ $stage -le 4 ]; then
 
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
-voc_model_id = 'reinfo_raw'
-tts_model_id = 'reinfo_lsa_attention'
+voc_model_id = 'reinfo_raw_16k'
+tts_model_id = 'reinfo_lsa_attention_16k'
 tts_cleaner_names = ['vie.vie_cleaners']
 voc_mode = 'RAW'
+sample_rate = 16000
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed
