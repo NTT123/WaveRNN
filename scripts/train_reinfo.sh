@@ -37,11 +37,20 @@ if [ $stage -le 4 ]; then
 
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
+
+sample_rate = 16000
+hop_length = 200    # 12.5ms - in line with Tacotron 2 paper
+win_length = 800    # 50ms - same reason as above
+
+
 voc_model_id = 'reinfo_raw_16k'
 tts_model_id = 'reinfo_lsa_attention_16k'
 tts_cleaner_names = ['vie.vie_cleaners']
-voc_mode = 'RAW'
-sample_rate = 16000
+
+voc_mode = 'MOL'
+voc_upsample_factors = (5, 5, 8)   # NB - this needs to correctly factorise hop_length
+
+
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed
