@@ -191,7 +191,7 @@ class GMMA(nn.Module):
     self.loc = torch.zeros(b, self.num_mixtures, device=encoder_seq_proj.device)
     self.prev_t = 0
 
-  def forward(self, encoder_seq_proj, query, t):
+  def forward(self, encoder_seq_proj, query, t, seq_mask=None):
     if t == 0:
       self.init_attention(encoder_seq_proj)
       factor = 1.
@@ -213,7 +213,7 @@ class GMMA(nn.Module):
     left = torch.sigmoid((centered - 0.5) / sigma_i[..., None])
     alpha = (right - left)
     # for j=0, use cdf Pr[x < 0.5]
-    alpha = torch.cat((right[..., :1], alpha[..., 1:]), dim=-1)
+    # alpha = torch.cat((right[..., :1], alpha[..., 1:]), dim=-1)
     self.attention = torch.sum(alpha * w_i[..., None], dim=1)
     return self.attention.unsqueeze(-1).transpose(1, 2)
 
@@ -268,7 +268,7 @@ class Decoder(nn.Module):
     self.register_buffer('r', torch.tensor(1, dtype=torch.int))
     self.n_mels = n_mels
     self.prenet = PreNet(n_mels)
-    self.attn_net = LSA(decoder_dims)
+    self.attn_net = GMMA(decoder_dims)
     self.attn_rnn = nn.GRUCell(decoder_dims + decoder_dims // 2, decoder_dims)
     self.rnn_input = nn.Linear(2 * decoder_dims, lstm_dims)
     self.res_rnn1 = nn.LSTMCell(lstm_dims, lstm_dims)
