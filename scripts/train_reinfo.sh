@@ -43,8 +43,8 @@ hop_length = 200    # 12.5ms - in line with Tacotron 2 paper
 win_length = 800    # 50ms - same reason as above
 
 
-voc_model_id = 'reinfo_raw_16k'
-tts_model_id = 'reinfo_lsa_attention_16k'
+voc_model_id = 'reinfo_mol_16k'
+tts_model_id = 'reinfo_mono_attention_16k'
 tts_cleaner_names = ['vie.vie_cleaners']
 
 voc_mode = 'MOL'
