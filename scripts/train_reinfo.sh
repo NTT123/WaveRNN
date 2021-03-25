@@ -41,7 +41,7 @@ if [ $stage -le 4 ]; then
 sample_rate = 16000
 hop_length = 200    # 12.5ms - in line with Tacotron 2 paper
 win_length = 800    # 50ms - same reason as above
-
+voc_seq_len = hop_length * 5
 
 voc_model_id = 'reinfo_raw_16k'
 tts_model_id = 'reinfo_lsa_attention_16k'

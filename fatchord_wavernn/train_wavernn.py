@@ -70,7 +70,7 @@ def main():
   # Check to make sure the hop length is correctly factorised
   assert np.cumprod(hp.voc_upsample_factors)[-1] == hp.hop_length
 
-  optimizer = optim.Adam(voc_model.parameters())
+  optimizer = optim.RMSprop(voc_model.parameters(), centered=True)
   restore_checkpoint('voc', paths, voc_model, optimizer, create_if_missing=True)
 
   train_set, test_set = get_vocoder_datasets(paths.data, batch_size, train_gta)

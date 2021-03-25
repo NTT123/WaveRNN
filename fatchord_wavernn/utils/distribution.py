@@ -33,48 +33,53 @@ def discretized_mix_logistic_loss(y_hat, y, num_classes=65536,
   # B x T x 1 -> B x T x num_mixtures
   y = y.expand_as(means)
 
-  centered_y = y - means
-  inv_stdv = torch.exp(-log_scales)
-  plus_in = inv_stdv * (centered_y + 1. / (num_classes - 1))
-  cdf_plus = torch.sigmoid(plus_in)
-  min_in = inv_stdv * (centered_y - 1. / (num_classes - 1))
-  cdf_min = torch.sigmoid(min_in)
+  z = (y - means) * torch.exp(-log_scales)
 
-  # log probability for edge case of 0 (before scaling)
-  # equivalent: torch.log(F.sigmoid(plus_in))
-  log_cdf_plus = plus_in - F.softplus(plus_in)
+  log_probs = -z - log_scales + 2 * torch.nn.functional.logsigmoid(z)
 
-  # log probability for edge case of 255 (before scaling)
-  # equivalent: (1 - F.sigmoid(min_in)).log()
-  log_one_minus_cdf_min = -F.softplus(min_in)
+  # centered_y = y - means
 
-  # probability for all other cases
-  cdf_delta = cdf_plus - cdf_min
+  # inv_stdv = torch.exp(-log_scales)
+  # plus_in = inv_stdv * (centered_y + 1. / (num_classes - 1))
+  # cdf_plus = torch.sigmoid(plus_in)
+  # min_in = inv_stdv * (centered_y - 1. / (num_classes - 1))
+  # cdf_min = torch.sigmoid(min_in)
 
-  mid_in = inv_stdv * centered_y
-  # log probability in the center of the bin, to be used in extreme cases
-  # (not actually used in our code)
-  log_pdf_mid = mid_in - log_scales - 2. * F.softplus(mid_in)
+  # # log probability for edge case of 0 (before scaling)
+  # # equivalent: torch.log(F.sigmoid(plus_in))
+  # log_cdf_plus = plus_in - F.softplus(plus_in)
 
-  # tf equivalent
-  """
-    log_probs = tf.where(x < -0.999, log_cdf_plus,
-                         tf.where(x > 0.999, log_one_minus_cdf_min,
-                                  tf.where(cdf_delta > 1e-5,
-                                           tf.log(tf.maximum(cdf_delta, 1e-12)),
-                                           log_pdf_mid - np.log(127.5))))
-    """
-  # TODO: cdf_delta <= 1e-5 actually can happen. How can we choose the value
-  # for num_classes=65536 case? 1e-7? not sure..
-  inner_inner_cond = (cdf_delta > 1e-5).float()
+  # # log probability for edge case of 255 (before scaling)
+  # # equivalent: (1 - F.sigmoid(min_in)).log()
+  # log_one_minus_cdf_min = -F.softplus(min_in)
 
-  inner_inner_out = inner_inner_cond * \
-      torch.log(torch.clamp(cdf_delta, min=1e-12)) + \
-      (1. - inner_inner_cond) * (log_pdf_mid - np.log((num_classes - 1) / 2))
-  inner_cond = (y > 0.999).float()
-  inner_out = inner_cond * log_one_minus_cdf_min + (1. - inner_cond) * inner_inner_out
-  cond = (y < -0.999).float()
-  log_probs = cond * log_cdf_plus + (1. - cond) * inner_out
+  # # probability for all other cases
+  # cdf_delta = cdf_plus - cdf_min
+
+  # mid_in = inv_stdv * centered_y
+  # # log probability in the center of the bin, to be used in extreme cases
+  # # (not actually used in our code)
+  # log_pdf_mid = mid_in - log_scales - 2. * F.softplus(mid_in)
+
+  # # tf equivalent
+  # """
+  #   log_probs = tf.where(x < -0.999, log_cdf_plus,
+  #                        tf.where(x > 0.999, log_one_minus_cdf_min,
+  #                                 tf.where(cdf_delta > 1e-5,
+  #                                          tf.log(tf.maximum(cdf_delta, 1e-12)),
+  #                                          log_pdf_mid - np.log(127.5))))
+  #   """
+  # # TODO: cdf_delta <= 1e-5 actually can happen. How can we choose the value
+  # # for num_classes=65536 case? 1e-7? not sure..
+  # inner_inner_cond = (cdf_delta > 1e-5).float()
+
+  # inner_inner_out = inner_inner_cond * \
+  #     torch.log(torch.clamp(cdf_delta, min=1e-12)) + \
+  #     (1. - inner_inner_cond) * (log_pdf_mid - np.log((num_classes - 1) / 2))
+  # inner_cond = (y > 0.999).float()
+  # inner_out = inner_cond * log_one_minus_cdf_min + (1. - inner_cond) * inner_inner_out
+  # cond = (y < -0.999).float()
+  # log_probs = cond * log_cdf_plus + (1. - cond) * inner_out
 
   log_probs = log_probs + F.log_softmax(logit_probs, -1)
 
