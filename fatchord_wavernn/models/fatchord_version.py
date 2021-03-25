@@ -236,7 +236,7 @@ class WaveRNN(nn.Module):
           posterior = F.softmax(logits, dim=1)
 
           # we use nucleus sampling
-          nucleus_prob = 0.95
+          nucleus_prob = 0.999
           posterior = F.softmax(logits, dim=1)
           p1, _ = torch.sort(posterior, dim=1)  # 0.1 0.2 0.3 0.4
           p2 = torch.cumsum(p1, dim=1)  # 0.1 0.3 0.6 1.
@@ -272,6 +272,8 @@ class WaveRNN(nn.Module):
     fade_out = np.linspace(1, 0, 20 * self.hop_length)
     output = output[:wave_len]
     output[-20 * self.hop_length:] *= fade_out
+    # normalize when max > 1
+    output = output / np.clip(np.amax(output), a_min=1.)
 
     save_wav(output, save_path)
 
