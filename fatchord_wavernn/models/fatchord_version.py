@@ -273,7 +273,7 @@ class WaveRNN(nn.Module):
     output = output[:wave_len]
     output[-20 * self.hop_length:] *= fade_out
     # normalize when max > 1
-    output = output / np.clip(np.amax(output), a_min=1.)
+    output = output / np.clip(np.amax(output), a_min=1., a_max=None)
 
     save_wav(output, save_path)
 
