@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..utils.display import *
-from ..utils.distribution import sample_from_discretized_mix_logistic
+from ..utils.distribution import sample_from_mix_logistic
 from ..utils.dsp import *
 
 
@@ -227,7 +227,7 @@ class WaveRNN(nn.Module):
         logits = self.fc3(x)
 
         if self.mode == 'MOL':
-          sample = sample_from_discretized_mix_logistic(logits.unsqueeze(0).transpose(1, 2))
+          sample = sample_from_mix_logistic(logits.unsqueeze(0).transpose(1, 2))
           output.append(sample.view(-1))
           # x = torch.FloatTensor([[sample]]).cuda()
           x = sample.transpose(0, 1)

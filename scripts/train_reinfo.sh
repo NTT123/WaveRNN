@@ -49,7 +49,7 @@ tts_cleaner_names = ['vie.vie_cleaners']
 
 voc_mode = 'MOL'
 voc_upsample_factors = (5, 5, 8)   # NB - this needs to correctly factorise hop_length
-
+voc_checkpoint_every = 10_000 #
 
 EOT
 

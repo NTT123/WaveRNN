@@ -13,7 +13,7 @@ from .utils import hparams as hp
 from .utils.checkpoints import restore_checkpoint, save_checkpoint
 from .utils.dataset import get_vocoder_datasets
 from .utils.display import simple_table, stream
-from .utils.distribution import discretized_mix_logistic_loss
+from .utils.distribution import mix_logistic_loss
 from .utils.paths import Paths
 
 
@@ -83,7 +83,7 @@ def main():
                 ('Sequence Len', hp.voc_seq_len),
                 ('GTA Train', train_gta)])
 
-  loss_func = F.cross_entropy if voc_model.mode == 'RAW' else discretized_mix_logistic_loss
+  loss_func = F.cross_entropy if voc_model.mode == 'RAW' else mix_logistic_loss
 
   voc_train_loop(paths, voc_model, loss_func, optimizer, train_set, test_set, lr, total_steps)
 

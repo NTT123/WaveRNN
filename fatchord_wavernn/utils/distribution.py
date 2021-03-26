@@ -13,8 +13,9 @@ def log_sum_exp(x):
 
 
 # It is adapted from https://github.com/r9y9/wavenet_vocoder/blob/master/wavenet_vocoder/mixture.py
-def discretized_mix_logistic_loss(y_hat, y, num_classes=65536,
-                                  log_scale_min=None, reduce=True):
+# just pdf
+def mix_logistic_loss(y_hat, y, num_classes=65536,
+                      log_scale_min=None, reduce=True):
   if log_scale_min is None:
     log_scale_min = float(np.log(1e-14))
   y_hat = y_hat.permute(0, 2, 1)
@@ -89,9 +90,9 @@ def discretized_mix_logistic_loss(y_hat, y, num_classes=65536,
     return -log_sum_exp(log_probs).unsqueeze(-1)
 
 
-def sample_from_discretized_mix_logistic(y, log_scale_min=None):
+def sample_from_mix_logistic(y, log_scale_min=None):
   """
-  Sample from discretized mixture of logistic distributions
+  Sample from mixture of logistic distributions
   Args:
       y (Tensor): B x C x T
       log_scale_min (float): Log scale minimum value
