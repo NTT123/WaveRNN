@@ -103,6 +103,10 @@ def voc_train_loop(paths: Paths, model: WaveRNN, loss_func, optimizer, train_set
 
   for e in range(1, epochs + 1):
 
+    reduce_factor = 2**(model.get_step() // (50_000))
+    for g in optimizer.param_groups:
+      g['lr'] = lr / reduce_factor
+
     start = time.time()
     running_loss = 0.
 
@@ -148,7 +152,7 @@ def voc_train_loop(paths: Paths, model: WaveRNN, loss_func, optimizer, train_set
         save_checkpoint('voc', paths, model, optimizer,
                         name=ckpt_name, is_silent=True)
 
-      msg = f'| Epoch: {e}/{epochs} ({i}/{total_iters}) | Loss: {avg_loss:.4f} | {speed:.1f} steps/s | Step: {k}k | '
+      msg = f'| Epoch: {e}/{epochs} ({i}/{total_iters}) | Loss: {avg_loss:.4f} | {speed:.1f} steps/s | Step: {k}k | LR: {lr / reduce_factor:.4E} | '
       stream(msg)
 
     # Must save latest optimizer state to ensure that resuming training
