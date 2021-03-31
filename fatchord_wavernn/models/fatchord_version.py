@@ -262,6 +262,7 @@ class WaveRNN(nn.Module):
 
     if mu_law:
       output = decode_mu_law(output, self.n_classes, False)
+      output = de_emphasis(output)
 
     if batched:
       output = self.xfade_and_unfold(output, target, overlap)

@@ -27,6 +27,7 @@ def gen_testset(model: WaveRNN, test_set, samples, batched, target, overlap, sav
 
     if hp.mu_law and hp.voc_mode != 'MOL':
       x = decode_mu_law(x, 2**bits, from_labels=True)
+      x = de_emphasis(x)
     else:
       x = label_2_float(x, bits)
 

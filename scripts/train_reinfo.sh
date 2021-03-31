@@ -52,7 +52,8 @@ voc_upsample_factors = (5, 5, 8)   # NB - this needs to correctly factorise hop_
 voc_checkpoint_every = 10_000 #
 bits = 8
 mu_law = True
-voc_lr = 1e-3
+voc_lr = 4e-4
+preemphasis = 0.85
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed
