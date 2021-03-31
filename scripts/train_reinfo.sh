@@ -43,7 +43,7 @@ hop_length = 200    # 12.5ms - in line with Tacotron 2 paper
 win_length = 800    # 50ms - same reason as above
 voc_seq_len = hop_length * 5
 
-voc_model_id = 'reinfo_raw_16k'
+voc_model_id = 'reinfo_raw_16k_preemphasis'
 tts_model_id = 'reinfo_mono_attention_16k'
 tts_cleaner_names = ['vie.vie_cleaners']
 
@@ -54,6 +54,8 @@ bits = 8
 mu_law = True
 voc_lr = 4e-4
 preemphasis = 0.85
+voc_compute_dims=512
+voc_res_out_dims=512
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed

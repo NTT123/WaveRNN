@@ -116,7 +116,11 @@ class WaveRNN(nn.Module):
     self.sample_rate = sample_rate
 
     self.upsample = UpsampleNetwork(feat_dims, upsample_factors, compute_dims, res_blocks, res_out_dims, pad)
-    self.I = nn.Linear(feat_dims + self.aux_dims + 1, rnn_dims)
+    if self.mode == 'RAW':
+      self.input_embed = nn.Embedding(self.n_classes, 256)
+      self.I = nn.Linear(feat_dims + self.aux_dims + 256, rnn_dims)
+    else:
+      self.I = nn.Linear(feat_dims + self.aux_dims + 1, rnn_dims)
 
     self.rnn1 = nn.GRU(rnn_dims, rnn_dims, batch_first=True)
     self.rnn2 = nn.GRU(rnn_dims + self.aux_dims, rnn_dims, batch_first=True)
@@ -152,7 +156,11 @@ class WaveRNN(nn.Module):
     a3 = aux[:, :, aux_idx[2]:aux_idx[3]]
     a4 = aux[:, :, aux_idx[3]:aux_idx[4]]
 
-    x = torch.cat([x.unsqueeze(-1), mels, a1], dim=2)
+    if self.mode == 'RAW':
+      x = self.input_embed(x)
+      x = torch.cat([x, mels, a1], dim=2)
+    else:
+      x = torch.cat([x.unsqueeze(-1), mels, a1], dim=2)
     x = self.I(x)
     res = x
     x, _ = self.rnn1(x, h1)
@@ -197,7 +205,7 @@ class WaveRNN(nn.Module):
 
       h1 = torch.zeros(b_size, self.rnn_dims, device=device)
       h2 = torch.zeros(b_size, self.rnn_dims, device=device)
-      x = torch.zeros(b_size, 1, device=device)
+      x = torch.zeros(b_size, device=device).long() + self.n_classes // 2
 
       d = self.aux_dims
       aux_split = [aux[:, :, d * i:d * (i + 1)] for i in range(4)]
@@ -208,6 +216,9 @@ class WaveRNN(nn.Module):
 
         a1_t, a2_t, a3_t, a4_t = \
             (a[:, i, :] for a in aux_split)
+
+        if self.mode == 'RAW':
+          x = self.input_embed(x)
 
         x = torch.cat([x, m_t, a1_t], dim=1)
         x = self.I(x)
@@ -247,9 +258,10 @@ class WaveRNN(nn.Module):
 
           distrib = torch.distributions.Categorical(posterior)
 
-          sample = 2 * distrib.sample().float() / (self.n_classes - 1.) - 1.
+          x = distrib.sample()
+          sample = 2 * x.float() / (self.n_classes - 1.) - 1.
           output.append(sample)
-          x = sample.unsqueeze(-1)
+          # x = sample.unsqueeze(-1)
         else:
           raise RuntimeError("Unknown model mode value - ", self.mode)
 

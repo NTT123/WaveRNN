@@ -85,9 +85,8 @@ def collate_vocoder(batch):
 
   bits = 16 if hp.voc_mode == 'MOL' else hp.bits
 
-  x = label_2_float(x.float(), bits)
-
   if hp.voc_mode == 'MOL':
+    x = label_2_float(x.float(), bits)
     y = label_2_float(y.float(), bits)
 
   return x, y, mels
