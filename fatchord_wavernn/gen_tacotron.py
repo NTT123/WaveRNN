@@ -21,6 +21,7 @@ if __name__ == "__main__":
   parser.add_argument('--force_cpu', '-c', action='store_true',
                       help='Forces CPU-only training, even when in CUDA capable environment')
   parser.add_argument('--hp_file', metavar='FILE', default='hparams.py', help='The file to use for the hyperparameters')
+  parser.add_argument('--output_file', default=None, type=str, help='Path to output wav file')
 
   parser.set_defaults(input_text=None)
   parser.set_defaults(weights_path=None)
@@ -157,6 +158,11 @@ if __name__ == "__main__":
       save_path = paths.tts_output/f'__input_{input_text[:10]}_{v_type}_{tts_k}k.wav'
     else:
       save_path = paths.tts_output/f'{i}_{v_type}_{tts_k}k.wav'
+
+    if args.output_file is not None:
+      save_path = args.output_file
+
+    print('saving output to file', save_path)
 
     if save_attn:
       save_attention(attention, save_path)
