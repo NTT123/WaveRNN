@@ -43,17 +43,17 @@ hop_length = 200    # 12.5ms - in line with Tacotron 2 paper
 win_length = 800    # 50ms - same reason as above
 voc_seq_len = hop_length * 5
 
-voc_model_id = 'reinfo_raw_16k_preemphasis'
+voc_model_id = 'reinfo_raw_16k_preemphasis_10bit'
 tts_model_id = 'reinfo_mono_attention_16k'
 tts_cleaner_names = ['vie.vie_cleaners']
 
 voc_mode = 'RAW'
 voc_upsample_factors = (5, 5, 8)   # NB - this needs to correctly factorise hop_length
 voc_checkpoint_every = 10_000 #
-bits = 8
+bits = 10
 mu_law = True
 voc_lr = 4e-4
-preemphasis = 0.85
+preemphasis = 0.97
 voc_compute_dims=512
 voc_res_out_dims=512
 EOT

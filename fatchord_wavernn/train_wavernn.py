@@ -103,7 +103,7 @@ def voc_train_loop(paths: Paths, model: WaveRNN, loss_func, optimizer, train_set
 
   for e in range(1, epochs + 1):
 
-    reduce_factor = 2**(model.get_step() // (50_000))
+    reduce_factor = 2**(model.get_step() // (100_000))
     for g in optimizer.param_groups:
       g['lr'] = lr / reduce_factor
 
