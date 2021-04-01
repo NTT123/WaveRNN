@@ -3,6 +3,8 @@ import argparse
 import numpy as np
 import torch
 
+from pathlib import Path
+
 from .models.fatchord_version import WaveRNN
 from .models.tacotron import Tacotron
 from .utils import hparams as hp
@@ -160,9 +162,9 @@ if __name__ == "__main__":
       save_path = paths.tts_output/f'{i}_{v_type}_{tts_k}k.wav'
 
     if args.output_file is not None:
-      save_path = args.output_file
+      save_path = Path(args.output_file)
 
-    print('saving output to file', save_path)
+    print('| saving output to file', save_path)
 
     if save_attn:
       save_attention(attention, save_path)
