@@ -4,6 +4,7 @@ import librosa
 import numpy as np
 import soundfile as sf
 from scipy.signal import lfilter
+from scipy.io import wavfile
 
 from . import hparams as hp
 
@@ -84,14 +85,6 @@ def stft(y):
   return librosa.stft(
       y=y,
       n_fft=hp.n_fft, hop_length=hp.hop_length, win_length=hp.win_length)
-
-
-def pre_emphasis(x):
-  return lfilter([1, -hp.preemphasis], [1], x)
-
-
-def de_emphasis(x):
-  return lfilter([1], [1, -hp.preemphasis], x)
 
 
 def encode_mu_law(x, mu):
