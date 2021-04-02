@@ -245,17 +245,15 @@ class WaveRNN(nn.Module):
 
         elif self.mode == 'RAW':
           posterior = F.softmax(logits, dim=1)
-
-          # we use nucleus sampling
-          nucleus_prob = 0.999
-          posterior = F.softmax(logits, dim=1)
-          p1, _ = torch.sort(posterior, dim=1)  # 0.1 0.2 0.3 0.4
-          p2 = torch.cumsum(p1, dim=1)  # 0.1 0.3 0.6 1.
-          p3 = p1.masked_fill(p2 > (1-nucleus_prob), 0.)  # 0.1 0 0 0
-          threshold, _ = torch.max(p3, dim=1, keepdim=True)  # 0.1
-          posterior = posterior.masked_fill(posterior <= threshold, 0.)
-          posterior = posterior / torch.sum(posterior, dim=1, keepdim=True)  # normalize probability
-
+          # # we use nucleus sampling
+          # nucleus_prob = 0.999
+          # posterior = F.softmax(logits, dim=1)
+          # p1, _ = torch.sort(posterior, dim=1)  # 0.1 0.2 0.3 0.4
+          # p2 = torch.cumsum(p1, dim=1)  # 0.1 0.3 0.6 1.
+          # p3 = p1.masked_fill(p2 > (1-nucleus_prob), 0.)  # 0.1 0 0 0
+          # threshold, _ = torch.max(p3, dim=1, keepdim=True)  # 0.1
+          # posterior = posterior.masked_fill(posterior <= threshold, 0.)
+          # posterior = posterior / torch.sum(posterior, dim=1, keepdim=True)  # normalize probability
           distrib = torch.distributions.Categorical(posterior)
 
           x = distrib.sample()
@@ -274,7 +272,6 @@ class WaveRNN(nn.Module):
 
     if mu_law:
       output = decode_mu_law(output, self.n_classes, False)
-      output = de_emphasis(output)
 
     if batched:
       output = self.xfade_and_unfold(output, target, overlap)
@@ -285,6 +282,7 @@ class WaveRNN(nn.Module):
     fade_out = np.linspace(1, 0, 20 * self.hop_length)
     output = output[:wave_len]
     output[-20 * self.hop_length:] *= fade_out
+    output = de_emphasis(output) if mu_law else output
     # normalize when max > 1
     output = output / np.clip(np.amax(output), a_min=1., a_max=None)
 

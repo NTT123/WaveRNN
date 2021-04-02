@@ -46,7 +46,9 @@ def convert_file(path: Path):
   mel = melspectrogram(y)
   if hp.voc_mode == 'RAW':
     y = pre_emphasis(y)
-    y = np.clip(y, a_min=-1., a_max=1.)  # can overflow after pre-emphasis (rarely, 1/100 clips)
+    peak = np.abs(y).max()
+    if peak > 1.0:
+      y /= peak
     quant = encode_mu_law(y, mu=2**hp.bits) if hp.mu_law else float_2_label(y, bits=hp.bits)
   elif hp.voc_mode == 'MOL':
     quant = float_2_label(y, bits=16)

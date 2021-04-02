@@ -56,6 +56,7 @@ voc_lr = 4e-4
 preemphasis = 0.97
 voc_compute_dims=512
 voc_res_out_dims=512
+peak_norm = True
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed
