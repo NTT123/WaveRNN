@@ -48,6 +48,10 @@ voc_lr = 4e-4
 voc_compute_dims=512
 voc_res_out_dims=512
 peak_norm = True
+n_fft = 1024
+fft_bins = n_fft // 2 + 1
+num_mels = 160
+fmin = 0
 EOT
 
   python3 -m fatchord_wavernn.preprocess --hp_file=$data_dir/processed/hparams.py --path=$data_dir/processed
