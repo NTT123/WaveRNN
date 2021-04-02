@@ -38,6 +38,7 @@ if [ $stage -le 4 ]; then
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
 sample_rate = 22050
+win_length = 1024
 voc_model_id = 'reinfo_raw_22k_mol_final'
 tts_model_id = 'reinfo_mono_attention_22k'
 tts_cleaner_names = ['vie.vie_cleaners']
