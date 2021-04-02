@@ -29,7 +29,8 @@ def mix_logistic_loss(y_hat, y, num_classes=65536,
   # unpack parameters. (B, T, num_mixtures) x 3
   logit_probs = y_hat[:, :, :nr_mix]
   means = y_hat[:, :, nr_mix:2 * nr_mix]
-  log_scales = torch.clamp(y_hat[:, :, 2 * nr_mix:3 * nr_mix], min=log_scale_min)
+  means = torch.tanh(means)
+  log_scales = torch.clamp(y_hat[:, :, 2 * nr_mix:3 * nr_mix], min=log_scale_min, max=0.)
 
   # B x T x 1 -> B x T x num_mixtures
   y = y.expand_as(means)
@@ -117,8 +118,9 @@ def sample_from_mix_logistic(y, log_scale_min=None):
   one_hot = F.one_hot(argmax, nr_mix).float()
   # select logistic parameters
   means = torch.sum(y[:, :, nr_mix:2 * nr_mix] * one_hot, dim=-1)
+  means = torch.tanh(means)
   log_scales = torch.clamp(torch.sum(
-      y[:, :, 2 * nr_mix:3 * nr_mix] * one_hot, dim=-1), min=log_scale_min)
+      y[:, :, 2 * nr_mix:3 * nr_mix] * one_hot, dim=-1), min=log_scale_min, max=0.)
   # sample from logistic & clip to interval
   # we don't actually round to the nearest 8bit value when sampling
   u = means.data.new(means.size()).uniform_(1e-5, 1.0 - 1e-5)

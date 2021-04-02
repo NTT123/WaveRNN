@@ -37,20 +37,12 @@ if [ $stage -le 4 ]; then
 
   cat <<EOT >> $data_dir/processed/hparams.py
 # reinfo settings
-
-sample_rate = 16000
-hop_length = 200    # 12.5ms - in line with Tacotron 2 paper
-win_length = 800    # 50ms - same reason as above
-voc_seq_len = hop_length * 5
-
-voc_model_id = 'reinfo_raw_16k_10bit_final'
-tts_model_id = 'reinfo_mono_attention_16k'
+sample_rate = 22050
+voc_model_id = 'reinfo_raw_22k_mol_final'
+tts_model_id = 'reinfo_mono_attention_22k'
 tts_cleaner_names = ['vie.vie_cleaners']
-
-voc_mode = 'RAW'
-voc_upsample_factors = (5, 5, 8)   # NB - this needs to correctly factorise hop_length
+voc_mode = 'MOL'
 voc_checkpoint_every = 10_000
-bits = 10
 mu_law = True
 voc_lr = 4e-4
 voc_compute_dims=512
