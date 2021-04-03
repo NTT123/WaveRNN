@@ -205,7 +205,10 @@ class WaveRNN(nn.Module):
 
       h1 = torch.zeros(b_size, self.rnn_dims, device=device)
       h2 = torch.zeros(b_size, self.rnn_dims, device=device)
-      x = torch.zeros(b_size, device=device).long() + self.n_classes // 2
+      if self.mode == 'RAW':
+        x = torch.zeros(b_size, device=device).long() + self.n_classes // 2
+      else:
+        x = torch.zeros(b_size, 1, device=device)
 
       d = self.aux_dims
       aux_split = [aux[:, :, d * i:d * (i + 1)] for i in range(4)]
